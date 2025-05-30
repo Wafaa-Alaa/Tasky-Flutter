@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:tas/add-task.dart';
 import 'package:tas/complete-tasks.dart';
+import 'package:tas/profile.dart';
 import 'package:tas/to-do-tasks.dart';
 
 import 'home.dart';
@@ -16,9 +17,11 @@ class NavigationPage extends StatefulWidget {
 class _NavigationPageState extends State<NavigationPage> {
   final List<Widget> _screens=[
     Home(),
-    AddTask(),
     ToDoTasks(),
     CompleteTasks(),
+    Profile()
+    // AddTask(),
+    // CompleteTasks(),
   ];
   int _currentIndex=0;
   @override

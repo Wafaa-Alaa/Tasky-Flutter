@@ -118,10 +118,13 @@ class _AddTaskState extends State<AddTask> {
                         desc: controllerDes.text,
                         isHighPrority: isHeightPrority,
                         title: controllerName.text,
+                        isCompleted:false,
                       );
                       listTasks.add(task.toMap());
                       // print('LLLLLLLLLLL $task');
-                      sharP.setString('tasks', jsonEncode(listTasks));
+                       print('LLLLLLLLLLL $task.desc');
+                      String value = jsonEncode(listTasks);
+                     await sharP.setString('tasks',value);
                       controllerName.clear();
                       controllerDes.clear();
                       Navigator.pop(context);
