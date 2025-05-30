@@ -5,12 +5,13 @@ class TaskModel {
   final String title;
   final String desc;
   final bool isHighPrority;
-
+  bool isCompleted;
   TaskModel({
     required this.id,
     required this.desc,
     required this.isHighPrority,
     required this.title,
+    this.isCompleted = false,
   });
 
   factory TaskModel.fromMap(Map<String, dynamic> map) {
@@ -19,6 +20,7 @@ class TaskModel {
       title: map['title'] ?? '',
       desc: map['desc'] ?? '',
       isHighPrority: map['isHighPrority'] ?? false,
+      isCompleted: map['isCompleted'] ?? false,
     );
   }
   Map<String,dynamic> toMap()
@@ -26,8 +28,9 @@ class TaskModel {
     return{
       'id':this.id,
       'title':this.title,
-      'Description':this.desc,
+      'desc':this.desc,
       'isHighPrority':this.isHighPrority,
+      'isCompleted': this.isCompleted,
     };
   }
   @override
@@ -37,6 +40,7 @@ class TaskModel {
         'title: "$title", '
         'desc: "$desc", '
         'isHighPrority: $isHighPrority'
+         'isCompleted :$isCompleted'
         '}';
   }
 }
