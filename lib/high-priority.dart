@@ -1,36 +1,37 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tas/add-task.dart';
-import 'package:tas/core/Models/task-models.dart';
-import 'package:tas/core/components/custome-textfiled.dart';
-import 'package:tas/core/services/sharedprefernce-manager.dart';
-import 'package:tas/high-priority.dart';
-import 'package:tas/start.dart';
+import 'package:tas/navigation-page.dart';
 
-class Home extends StatefulWidget {
-  Home({super.key});
+import 'core/Models/task-models.dart';
+import 'core/components/custome-textfiled.dart';
+import 'core/services/sharedprefernce-manager.dart';
+import 'home.dart';
+
+class HightPriroty extends StatefulWidget {
+  const HightPriroty({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  State<HightPriroty> createState() => _HightPrirotyState();
 }
 
-class _HomeState extends State<Home> {
+class _HightPrirotyState extends State<HightPriroty> {
   List<TaskModel> tasksModel = [];
   List<TaskModel> completedTasks = [];
   List<TaskModel> toDotasks = [];
   List<TaskModel> isHighPrority = [];
   double completionPercentage = 0.0;
+
+
   @override
   void initState() {
     super.initState();
-
-    _loadUsername();
     _getData();
-    _loadProfileImage();
   }
+
   final SharedPreferencesProvider _prefsProvider = SharedPreferencesProvider();
   String username='';
   void _getData() async {
@@ -42,7 +43,7 @@ class _HomeState extends State<Home> {
       setState(() {
         tasksModel = tasksDecode.map((e) => TaskModel.fromMap(e)).toList();
         completedTasks = tasksModel.where((task) => task.isCompleted).toList();
-       print('completed tasks.lenhth=======${completedTasks.length}');
+        print('completed tasks.lenhth=======${completedTasks.length}');
         toDotasks = tasksModel.where((task) => task.isCompleted == false).toList();
         isHighPrority = tasksModel.where((task) => task.isHighPrority).toList();
         completionPercentage = calculateCompletionPercentage();
@@ -50,312 +51,81 @@ class _HomeState extends State<Home> {
       });
     }
   }
-
   Future<void> saveTasks() async {
-    await _prefsProvider.setString(
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
       'tasks',
       jsonEncode(tasksModel.map((e) => e.toMap()).toList()),
     );
   }
-
   double calculateCompletionPercentage() {
     if (tasksModel.isEmpty) return 0.0;
     int completedCount = tasksModel.where((task) => task.isCompleted).length;
     return (completedCount / tasksModel.length) * 100;
   }
-  Future<void> _loadUsername() async {
-    String? savedUsername = await _prefsProvider.getString('username');
-    if (mounted) {
-      setState(() {
-        username = savedUsername ?? '';
-      });
-    }
-  }
-  Future<void> _loadProfileImage() async {
-    final imageString = await _prefsProvider.getString('profileImage');
-    if (mounted && imageString != null && imageString.isNotEmpty) {
-      setState(() {});
-    }
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.only(top: 32, left: 16, right: 16),
-        child: Column(
-          children: [
-            SizedBox(width: 375, height: 52),
-            Row(
+        body:SafeArea(
+
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
               children: [
-                FutureBuilder<String?>(
-                  future: _prefsProvider.getString('profileImage'),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data != null && snapshot.data!.isNotEmpty) {
-                      final bytes = base64Decode(snapshot.data!);
-                      return CircleAvatar(
-                        radius: 30,
-                        backgroundImage: MemoryImage(bytes),
-                      );
-                    }
-                    return  ClipOval(
-                      child: Image.asset(
-                        'assets/images/imageprofile.avif',
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(width: 20),
-                Column(
+                SizedBox(width: 375, height: 52),
+                Row(
                   children: [
-                    Text(
-                      'Good Evening ,$username',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.displayMedium?.copyWith(fontSize: 20),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => NavigationPage()),
+                        );
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: const Color(0xFF282828),
+                        radius: 17,
+                        child: SvgPicture.asset(
+                          'assets/images/Icon2.svg',
+                          width: 18,
+                          height: 18,
+                        ),
+                      ),
                     ),
+                    SizedBox(width: 16),
                     Text(
-                      'One task at a time.One step\n closer. ',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.displayMedium?.copyWith(fontSize: 16),
+                      ' HighPriority Tasks',
+                      style: Theme.of(context).textTheme.displayMedium
+                          ?.copyWith(fontSize: 20, fontWeight: FontWeight.w400),
                     ),
                   ],
                 ),
-                SizedBox(width: 30),
-                CircleAvatar(
-                  backgroundColor: const Color(0xFF282828),
-                  radius: 17,
-                  child: SvgPicture.asset(
-                    'assets/images/Icon.svg',
-                    width: 18,
-                    height: 18,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 24),
-            Expanded(
-              child: Column(
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Yuhuu ,Your work Is ',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.displayMedium?.copyWith(fontSize: 32),
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        'almost done ! ',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.displayMedium?.copyWith(fontSize: 32),
-                      ),
-                      SvgPicture.asset(
-                        'assets/images/hand3.svg',
-                        width: 32,
-                        height: 32,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Container(
-                    padding: EdgeInsets.all(12),
+                SizedBox(height: 40),
+                isHighPrority.isEmpty
+                    ? Padding(
+                  padding: const EdgeInsets.only(top: 300),
+                  child: Center(child: Container(
+                    padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardTheme.color,
+                      border: Border.all(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Achieved Tasks',
-                                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '${completedTasks.length} Out of ${tasksModel.length} Done',
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      fontSize: 15,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Stack(
-                          children: [
-                            SizedBox(
-                              height: 50,
-                              width: 50,
-                              child: CircularProgressIndicator(
-                                value: 1.0,
-                                backgroundColor: Colors.transparent,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.withOpacity(0.3)),
-                                strokeWidth: 6,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 50,
-                              width: 50,
-                              child: CircularProgressIndicator(
-                                value: calculateCompletionPercentage() / 100,
-                                backgroundColor: Colors.transparent,
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF15B86C)),
-                                strokeWidth: 6,
-                              ),
-                            ),
-                            Container(
-                              height: 50,
-                              width: 50,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.transparent,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${calculateCompletionPercentage().toStringAsFixed(0)}%',
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                        fontSize: 15,
-                                        // color: Colors.white,
-                                      ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 200,
-                    child: Stack(  // Changed to Stack to overlay the arrow button
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardTheme.color,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 16, top: 8, right: 8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'High Priority Tasks',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.displayMedium?.copyWith(
-                                    fontSize: 22,
-                                    color: Color(0xFF15B86C),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: ListView.builder(
-                                    itemCount: isHighPrority.length,
-                                    itemBuilder: (BuildContext context, int index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 1),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: [
-                                            Checkbox(
-                                              value: isHighPrority[index].isCompleted,
-                                              onChanged: (bool? value) async {
-                                                setState(() {
-                                                  bool newValue = value ?? false;
-                                                  isHighPrority[index].isCompleted = newValue;
-                                                  int mainIndex = tasksModel.indexWhere((task) =>
-                                                  task.id == isHighPrority[index].id);
-                                                  if (mainIndex != -1) {
-                                                    tasksModel[mainIndex].isCompleted = newValue;
-                                                  }
-                                                  completedTasks = tasksModel.where((task) => task.isCompleted).toList();
-                                                  toDotasks = tasksModel.where((task) => !task.isCompleted).toList();
-                                                  completionPercentage = calculateCompletionPercentage();
-                                                });
-                                                await saveTasks();
-                                              },
-                                              activeColor: Color(0xFF15B86C),
-                                            ),
-                                            Text(
-                                              isHighPrority[index].title,
-                                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                                decoration: isHighPrority[index].isCompleted
-                                                    ? TextDecoration.lineThrough
-                                                    : TextDecoration.none,
-                                                     decorationThickness: 2,
-                                              decorationColor: isHighPrority[index].isCompleted? Color(0xFF6A6A6A):null,
-                                            color: isHighPrority[index].isCompleted? Color(0xFF6A6A6A):null
-                                              ),
-
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // Add this positioned widget for the arrow button
-                        Positioned(
-                          bottom: 8,
-                          right: 8,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => HightPriroty()));
-                            },
-                            child: Container(
-                              width: 35,
-                              height: 35,
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                    color: Colors.grey,  // Gray border color
-                                    width:2)
-                              ),
-                              child: Icon(
-                                Icons.arrow_outward,
-                                // color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 50),
-                  Align(
-                    alignment: Alignment.centerLeft,
                     child: Text(
-                      'My Tasks',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.displayMedium?.copyWith(fontSize: 22),
+                      'No  HighPriority Tasks',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        // color: Colors.white,
+                      ),
                     ),
                   ),
-                  Expanded(
+                  ),
+                ):  Expanded(
                     child: ListView.builder(
-                      itemCount: tasksModel.length,
+                      itemCount:isHighPrority.length,
                       itemBuilder: (BuildContext context, int index) {
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -365,7 +135,7 @@ class _HomeState extends State<Home> {
                             mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Checkbox(
-                                  value: tasksModel[index].isCompleted,
+                                  value: isHighPrority[index].isCompleted,
                                   onChanged: (bool? value) async {
                                     setState(() {
                                       if (value == null) {
@@ -374,7 +144,7 @@ class _HomeState extends State<Home> {
                                       }
                                         else {
 
-                                        tasksModel[index].isCompleted = value!;
+                                        isHighPrority[index].isCompleted = value!;
                                         completedTasks = tasksModel.where((task) => task.isCompleted).toList();
                                         toDotasks = tasksModel.where((task) => !task.isCompleted).toList();
                                         isHighPrority = tasksModel.where((task) => task.isHighPrority).toList();
@@ -393,32 +163,32 @@ class _HomeState extends State<Home> {
                                     padding: const EdgeInsets.only(top: 4),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start, // Align text to left
-                                      mainAxisAlignment: tasksModel[index].desc.isEmpty
+                                      mainAxisAlignment: isHighPrority[index].desc.isEmpty
                                           ? MainAxisAlignment.center
                                           : MainAxisAlignment.start,
                                       children: [
                                         Text(
-                                          tasksModel[index].title,
+                                          isHighPrority[index].title,
                                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                            decoration:  tasksModel[index].isCompleted
+                                            decoration: isHighPrority[index].isCompleted
                                                 ? TextDecoration.lineThrough
                                                 : TextDecoration.none,
                                             decorationThickness: 2,
-                                              decorationColor:tasksModel[index].isCompleted? Color(0xFF6A6A6A):null,
-                                            color:tasksModel[index].isCompleted? Color(0xFF6A6A6A):null
+                                              decorationColor:isHighPrority[index].isCompleted? Color(0xFF6A6A6A):null,
+                                            color:isHighPrority[index].isCompleted? Color(0xFF6A6A6A):null
 
                                           ),
                                         ),
                                         // SizedBox(height: 5),
                                         Text(
-                                          tasksModel[index].desc,
+                                          isHighPrority[index].desc,
                                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                              decoration:  tasksModel[index].isCompleted
+                                              decoration:  isHighPrority[index].isCompleted
                                                   ? TextDecoration.lineThrough
                                                   : TextDecoration.none,
                                               decorationThickness: 2,
-                                              decorationColor:tasksModel[index].isCompleted? Color(0xFF6A6A6A):null,
-                                              color:tasksModel[index].isCompleted? Color(0xFF6A6A6A):null
+                                              decorationColor:isHighPrority[index].isCompleted? Color(0xFF6A6A6A):null,
+                                              color:isHighPrority[index].isCompleted? Color(0xFF6A6A6A):null
                                           ),
                                         ),
                                       ],
@@ -722,49 +492,10 @@ class _HomeState extends State<Home> {
                       },
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: SizedBox(
-                      width: 167,
-                      height: 40,
-                      child: FloatingActionButton(
-                        backgroundColor: Color(0xFF15B86C),
-                        onPressed: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (BuildContext context) {
-                                return AddTask();
-                              },
-                            ),
-                          );
-                          _getData();
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add, color: Colors.white),
-                            SizedBox(width: 10),
-                            Row(
-                              children: [
-                                Text(
-                                  'Add New Task',
-                                  style: Theme.of(context).textTheme.labelLarge,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 30,)
-                ],
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        )
     );
   }
 }

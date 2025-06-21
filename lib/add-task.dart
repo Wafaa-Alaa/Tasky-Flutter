@@ -5,6 +5,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tas/core/Models/task-models.dart';
 import 'package:tas/core/components/custome-textfiled.dart';
+import 'package:tas/core/services/sharedprefernce-manager.dart';
+import 'package:tas/navigation-page.dart';
 
 import 'home.dart';
 
@@ -23,6 +25,8 @@ class _AddTaskState extends State<AddTask> {
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
 
   bool isHeightPrority = false;
+
+  final SharedPreferencesProvider _prefsProvider = SharedPreferencesProvider();
 
   @override
   Widget build(BuildContext context) {
@@ -105,29 +109,38 @@ class _AddTaskState extends State<AddTask> {
                 ElevatedButton(
                   onPressed: () async {
                     if (_key.currentState?.validate() ?? false) {
-                      final SharedPreferences sharP =
-                          await SharedPreferences.getInstance();
-                      final String? list=sharP.getString('tasks');
-                      List<dynamic> listTasks=[];
-                      if(list!=null)
-                        {
-                          listTasks=jsonDecode(list);
-                        }
+                      // Get existing tasks
+                      String? tasksString = await _prefsProvider.getString('tasks');
+                      List<dynamic> listTasks = [];
+
+                      if (tasksString != null) {
+                        listTasks = jsonDecode(tasksString);
+                      }
+
+                      // Create new task
                       TaskModel task = TaskModel(
-                        id: listTasks.length+1,
+                        id: listTasks.length + 1,
                         desc: controllerDes.text,
                         isHighPrority: isHeightPrority,
                         title: controllerName.text,
-                        isCompleted:false,
+                        isCompleted: false,
                       );
+
+                      // Add new task
                       listTasks.add(task.toMap());
-                      // print('LLLLLLLLLLL $task');
-                       print('LLLLLLLLLLL $task.desc');
-                      String value = jsonEncode(listTasks);
-                     await sharP.setString('tasks',value);
+
+                      // Save tasks
+                      await _prefsProvider.setString('tasks', jsonEncode(listTasks));
+
+                      // Clear fields and pop
                       controllerName.clear();
                       controllerDes.clear();
-                      Navigator.pop(context);
+                      print('data saved lolololo');
+                      // Navigator.pop(context);// This will now work
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) =>NavigationPage()),
+                      );
                     }
                   },
 
@@ -140,7 +153,7 @@ class _AddTaskState extends State<AddTask> {
                         'Add Task',
                         style: Theme.of(
                           context,
-                        ).textTheme.displayMedium?.copyWith(fontSize: 16),
+                        ).textTheme.displayMedium?.copyWith(fontSize: 16,color: Colors.white),
                       ),
                     ],
                   ),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class CustomeTextFieled extends StatelessWidget {
-  CustomeTextFieled({super.key,required this.title,required this.hintText,required this.controller, this.validator,this.maxLins=1
+  CustomeTextFieled({super.key,required this.title, this.hintText,required this.controller, this.validator,this.maxLins=1
   });
   final String title;
-  final String hintText;
+  final String? hintText;
   final int? maxLins;
   final TextEditingController controller;
   final String? Function(String?)? validator;

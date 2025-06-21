@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tas/core/components/custome-textfiled.dart';
+import 'package:tas/core/services/sharedprefernce-manager.dart';
+import 'package:tas/navigation-page.dart';
 import 'home.dart';
 
 class Start extends StatelessWidget {
   Start({super.key});
   final TextEditingController controllerName = TextEditingController();
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
+  final SharedPreferencesProvider _prefsProvider = SharedPreferencesProvider();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 30),
         child: Form(
           key: _key,
           child: Column(
@@ -78,14 +82,13 @@ class Start extends StatelessWidget {
               SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () async {
-                  final SharedPreferences sharP = await SharedPreferences.getInstance();
-                  sharP.setString('username',controllerName.text);
+                  _prefsProvider.setString('username',controllerName.text);
                   if (_key.currentState?.validate() ?? false) {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (BuildContext context) {
-                          return Home();
+                          return NavigationPage();
                         },
                       ),
                     );
